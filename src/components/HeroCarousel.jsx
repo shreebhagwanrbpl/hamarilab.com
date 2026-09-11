@@ -21,23 +21,14 @@ const FALLBACK_SLIDES = [
   {
     type: "image",
     url: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1900&q=80",
-    title: "Precision Medical Equipment & Diagnostic Solutions",
-    subtitle:
-      "Equipping hospitals, pathology centers, and clinical laboratories with top-tier automated analyzers, NABL-traceable calibration, and 24/7 rapid technical engineering support across India.",
   },
   {
     type: "image",
     url: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1900&q=80",
-    title: "Automated Clinical Chemistry & Pathology Analyzers",
-    subtitle:
-      "High-throughput diagnostic instruments delivering rapid test results with uncompromised quality control and ISO 13485 certified accuracy standards.",
   },
   {
     type: "image",
     url: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1900&q=80",
-    title: "24/7 Biomedical Engineering & AMC Support",
-    subtitle:
-      "Guaranteed 2-hour emergency repair SLA for critical ICU, OT, and pathology laboratory equipment with genuine OEM parts.",
   },
 ];
 
@@ -45,6 +36,7 @@ export default function HeroCarousel({
   homeData = null,
   locationTitle = "",
   makeLink = (path) => path,
+  loading = false,
 }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -127,23 +119,48 @@ export default function HeroCarousel({
   const dbSlides = parseMediaList(homeData);
   const slides = dbSlides.length > 0 ? dbSlides : FALLBACK_SLIDES;
 
-  // Dynamic texts with fallbacks
-  const heroTitle =
-    homeData?.title?.trim() ||
-    (locationTitle
-      ? `Precision Medical Equipment & Diagnostic Solutions in ${locationTitle}`
-      : "Precision Medical Equipment & Diagnostic Solutions");
+  // Pure dynamic texts - zero static fallback text
+  const heroTitle = homeData?.title?.trim()
+    ? (locationTitle && !homeData.title.toLowerCase().includes(locationTitle.toLowerCase())
+      ? `${homeData.title.trim()} in ${locationTitle}`
+      : homeData.title.trim())
+    : (locationTitle ? `Biomedical Equipment in ${locationTitle}` : "");
 
   const heroDescription =
     homeData?.description?.trim() ||
-    "Equipping hospitals, pathology centers, and clinical laboratories with top-tier automated analyzers, NABL-traceable calibration, and 24/7 rapid technical engineering support across India.";
+    homeData?.desc?.trim() ||
+    homeData?.subtitle?.trim() ||
+    "";
 
-  const btn1Text = homeData?.button1Text?.trim() || "Explore Product Catalog";
-  const btn2Text = homeData?.button2Text?.trim() || "Request Official Quote";
+  // Pure dynamic buttons - zero static fallback strings
+  const btn1Text = (
+    homeData?.button1Text ||
+    homeData?.button1Title ||
+    homeData?.btn1Text ||
+    homeData?.buttonText ||
+    ""
+  )?.trim();
+  const rawBtn1Link = homeData?.button1Link || homeData?.button1Url || homeData?.btn1Link || "/items";
+  const btn1Href = rawBtn1Link.startsWith("http") || rawBtn1Link.startsWith("tel:") || rawBtn1Link.startsWith("mailto:")
+    ? rawBtn1Link
+    : makeLink(rawBtn1Link.startsWith("/") ? rawBtn1Link : `/${rawBtn1Link}`);
 
-  // Static routes for buttons
-  const btn1Href = makeLink("/items");
-  const btn2Href = makeLink("/contact");
+  const btn2Text = (
+    homeData?.button2Text ||
+    homeData?.button2Title ||
+    homeData?.btn2Text ||
+    ""
+  )?.trim();
+  const rawBtn2Link = homeData?.button2Link || homeData?.button2Url || homeData?.btn2Link || "/contact";
+  const btn2Href = rawBtn2Link.startsWith("http") || rawBtn2Link.startsWith("tel:") || rawBtn2Link.startsWith("mailto:")
+    ? rawBtn2Link
+    : makeLink(rawBtn2Link.startsWith("/") ? rawBtn2Link : `/${rawBtn2Link}`);
+
+  const badgeText = (
+    homeData?.badge ||
+    homeData?.tagline ||
+    (locationTitle ? `Biomedical Equipment Supplier in ${locationTitle}` : "")
+  )?.trim();
 
   // Auto-slide effect
   useEffect(() => {
@@ -170,7 +187,7 @@ export default function HeroCarousel({
       const vid = videoRefs.current[currentSlide];
       if (vid) {
         vid.currentTime = 0;
-        vid.play().catch(() => {});
+        vid.play().catch(() => { });
       }
     }
   }, [currentSlide, slides]);
@@ -211,203 +228,217 @@ export default function HeroCarousel({
   const activeMedia = slides[currentSlide] || slides[0];
 
   return (
-    <section className="relative overflow-hidden bg-[#1a0f05] text-white">
-      {/* Background Media Viewport with Full Brightness & High Image Visibility */}
-      <div
-        className="relative w-full h-[380px] sm:h-[440px] md:h-[490px] lg:h-[530px] overflow-hidden"
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide}
-            initial={{ opacity: 0, scale: 1.02 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-            className="absolute inset-0 w-full h-full"
-          >
-            {activeMedia?.type === "video" ? (
-              <video
-                ref={(el) => (videoRefs.current[currentSlide] = el)}
-                src={activeMedia.url}
-                className="w-full h-full object-cover object-center"
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-              />
-            ) : (
-              <img
-                src={activeMedia?.url}
-                alt={`Hero Slide ${currentSlide + 1}`}
-                className="w-full h-full object-cover object-center brightness-[0.95] contrast-[1.05]"
-                onError={(e) => {
-                  e.target.src = FALLBACK_SLIDES[0].url;
-                }}
-              />
+    <section className="relative overflow-hidden bg-slate-950 text-white min-h-[520px] lg:min-h-[580px] flex items-center">
+      {/* Ambient Teal Background Glow */}
+      <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-teal-500/15 blur-[120px]" />
+      <div className="pointer-events-none absolute right-0 bottom-0 h-96 w-96 rounded-full bg-teal-600/10 blur-[140px]" />
+
+      {/* Main Grid Container with Diagonal Split */}
+      <div className="container-custom relative z-10 w-full py-10 lg:py-14">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+
+          {/* ================= LEFT CONTENT COLUMN ================= */}
+          <div className="lg:col-span-6 z-20">
+            {/* Top Innovation Badge */}
+            {badgeText && (
+              <motion.div
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-950/60 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-teal-300 shadow-lg backdrop-blur-md"
+              >
+                <Sparkles size={14} className="text-teal-400 animate-pulse" />
+                <span>{badgeText}</span>
+              </motion.div>
             )}
-          </motion.div>
-        </AnimatePresence>
 
-        {/* Soft, Non-intrusive Gradient only on text side (Leaves image bright and visible) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/35 to-transparent lg:w-3/5" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
-
-        {/* Foreground Content Container */}
-        <div className="container-custom relative z-20 h-full flex flex-col justify-center py-6 sm:py-8">
-          <div className="max-w-2xl lg:max-w-3xl">
-            {/* Top Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: -15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/50 px-3.5 py-1.5 text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-[#FDFBD4] shadow-lg backdrop-blur-md"
-            >
-              <Sparkles size={14} className="text-[#FBBF24] animate-pulse" />
-              <span>
-                {locationTitle
-                  ? `Leading Biomedical Supplier in ${locationTitle}`
-                  : "Pioneering Biomedical & Diagnostic Innovations"}
-              </span>
-            </motion.div>
-
-            {/* Main Heading with crisp drop-shadow */}
-            <motion.h1
-              key={`title-${currentSlide}-${heroTitle}`}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="mt-3 sm:mt-4 text-2xl font-black tracking-tight text-white sm:text-3xl md:text-4xl lg:text-5xl leading-[1.14] drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]"
-            >
-              {heroTitle}
-            </motion.h1>
-
-            {/* Description with crisp drop-shadow */}
-            <motion.p
-              key={`desc-${currentSlide}-${heroDescription}`}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="mt-2.5 sm:mt-3 text-xs sm:text-sm md:text-base leading-relaxed text-[#FDFBD4] max-w-2xl font-medium line-clamp-3 md:line-clamp-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]"
-            >
-              {heroDescription}
-            </motion.p>
-
-            {/* Action Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="mt-5 sm:mt-6 flex flex-wrap items-center gap-3"
-            >
-              <Link
-                href={btn1Href}
-                className="flex items-center justify-center gap-2 rounded-xl bg-[#C05800] !text-white px-6 py-3 text-xs sm:text-sm font-bold shadow-xl shadow-[#C05800]/40 transition-all duration-300 hover:bg-[#E06D00] hover:shadow-2xl hover:-translate-y-0.5 border border-amber-400/20"
+            {/* Dynamic Hero Heading */}
+            {heroTitle && (
+              <motion.h1
+                key={`title-${heroTitle}`}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="mt-4 text-3xl font-black tracking-tight text-white sm:text-4xl md:text-5xl lg:text-[2.85rem] leading-[1.12]"
               >
-                <span className="!text-white font-bold">{btn1Text}</span>
-                <ArrowRight size={16} className="!text-white" />
-              </Link>
+                {heroTitle}
+              </motion.h1>
+            )}
 
-              <Link
-                href={btn2Href}
-                className="flex items-center justify-center gap-2 rounded-xl border border-white/50 bg-black/60 !text-white px-6 py-3 text-xs sm:text-sm font-bold backdrop-blur-md shadow-md transition-all duration-300 hover:bg-white hover:!text-[#38240D] hover:border-white hover:-translate-y-0.5"
+            {/* Dynamic Description */}
+            {heroDescription && (
+              <motion.p
+                key={`desc-${heroDescription}`}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="mt-3.5 text-sm sm:text-base leading-relaxed text-slate-300 max-w-xl font-medium"
               >
-                <PhoneCall size={16} className="text-[#FBBF24]" />
-                <span className="font-bold">{btn2Text}</span>
-              </Link>
-            </motion.div>
+                {heroDescription}
+              </motion.p>
+            )}
 
-            {/* Trust Badges */}
+            {/* CTA Buttons */}
+            {(btn1Text || btn2Text) && (
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="mt-6 flex flex-wrap items-center gap-3.5"
+              >
+                {btn1Text && (
+                  <Link
+                    href={btn1Href}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#0d9488] px-7 py-3.5 text-sm font-bold text-white shadow-xl shadow-[#0d9488]/30 transition-all duration-300 hover:bg-[#0f766e] hover:shadow-2xl hover:-translate-y-0.5 border border-teal-400/20"
+                  >
+                    <span>{btn1Text}</span>
+                    <ArrowRight size={16} />
+                  </Link>
+                )}
+
+                {btn2Text && (
+                  <Link
+                    href={btn2Href}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/80 px-6 py-3.5 text-sm font-bold text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:!text-slate-950 hover:border-white hover:-translate-y-0.5"
+                  >
+                    <PhoneCall size={16} className="text-teal-400" />
+                    <span>{btn2Text}</span>
+                  </Link>
+                )}
+              </motion.div>
+            )}
+
+            {/* Trust Indicators */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="mt-5 hidden sm:flex flex-wrap items-center gap-5 border-t border-white/20 pt-4 text-xs font-semibold text-[#FDFBD4] drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)]"
+              className="mt-8 flex flex-wrap items-center gap-5 border-t border-slate-800/80 pt-5 text-xs font-semibold text-slate-300"
             >
               <div className="flex items-center gap-1.5">
-                <CheckCircle2 size={16} className="text-[#FBBF24] shrink-0" />
+                <CheckCircle2 size={16} className="text-[#0d9488] shrink-0" />
                 <span>ISO 13485 Certified</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <CheckCircle2 size={16} className="text-[#FBBF24] shrink-0" />
+                <CheckCircle2 size={16} className="text-[#0d9488] shrink-0" />
                 <span>24/7 SLA Field Support</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <CheckCircle2 size={16} className="text-[#FBBF24] shrink-0" />
-                <span>NABL Traceable QC</span>
+                <CheckCircle2 size={16} className="text-[#0d9488] shrink-0" />
+                <span>NABL Traceable Calibration</span>
               </div>
             </motion.div>
           </div>
-        </div>
 
-        {/* Carousel Floating Controls Bar */}
-        {slides.length > 1 && (
-          <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-30 flex items-center gap-2 sm:gap-3">
-            {/* Auto-play toggle */}
-            <button
-              type="button"
-              onClick={() => setIsPlaying(!isPlaying)}
-              title={isPlaying ? "Pause Slideshow" : "Play Slideshow"}
-              className="hidden sm:flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 text-white backdrop-blur-md border border-white/30 hover:bg-black/85 transition-all shadow-md"
+          {/* ================= RIGHT DIAGONAL CAROUSEL MEDIA ================= */}
+          <div className="lg:col-span-6 relative">
+            {/* Diagonal Frame Container */}
+            <div
+              className="relative h-[340px] sm:h-[420px] md:h-[460px] lg:h-[490px] w-full overflow-hidden rounded-3xl lg:rounded-[36px] border border-teal-500/20 shadow-2xl shadow-black/80 bg-slate-900"
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+              style={{
+                clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+              }}
             >
-              {isPlaying ? <Pause size={14} /> : <Play size={14} />}
-            </button>
+              {/* Diagonal Decorative Cut Accent Lines */}
+              <div className="pointer-events-none absolute -top-12 -right-12 h-44 w-44 rounded-full bg-teal-500/20 blur-2xl z-20" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/30 z-10" />
 
-            {/* Prev Button */}
-            <button
-              type="button"
-              onClick={handlePrev}
-              title="Previous Slide"
-              className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl sm:rounded-2xl bg-black/60 text-white backdrop-blur-md border border-white/30 hover:bg-[#C05800] hover:border-[#C05800] transition-all shadow-md"
-            >
-              <ChevronLeft size={18} />
-            </button>
+              {/* Animated Slides */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentSlide}
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }}
+                  className="absolute inset-0 w-full h-full"
+                >
+                  {activeMedia?.type === "video" ? (
+                    <video
+                      ref={(el) => (videoRefs.current[currentSlide] = el)}
+                      src={activeMedia.url}
+                      className="w-full h-full object-cover object-center"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      preload="auto"
+                    />
+                  ) : (
+                    <img
+                      src={activeMedia?.url}
+                      alt={`Hero Slide ${currentSlide + 1}`}
+                      className="w-full h-full object-cover object-center brightness-[0.98] contrast-[1.03]"
+                      onError={(e) => {
+                        e.target.src = FALLBACK_SLIDES[0].url;
+                      }}
+                    />
+                  )}
+                </motion.div>
+              </AnimatePresence>
 
-            {/* Counter Badge */}
-            <div className="flex items-center gap-1.5 rounded-xl bg-black/70 px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-bold text-[#FDFBD4] backdrop-blur-md border border-white/30 shadow-md">
-              {activeMedia?.type === "video" ? (
-                <Film size={12} className="text-[#FBBF24]" />
-              ) : (
-                <ImageIcon size={12} className="text-[#FBBF24]" />
+              {/* Floating Slide Tag */}
+              <div className="absolute top-4 left-4 z-20 flex items-center gap-2 rounded-xl bg-slate-950/80 border border-teal-500/30 px-3.5 py-1.5 text-xs font-bold text-teal-300 backdrop-blur-md shadow-lg">
+                {activeMedia?.type === "video" ? (
+                  <Film size={14} className="text-teal-400" />
+                ) : (
+                  <ImageIcon size={14} className="text-teal-400" />
+                )}
+                <span>Diagnostic Equipment</span>
+              </div>
+
+              {/* Floating Slide Navigation Controls */}
+              {slides.length > 1 && (
+                <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handlePrev}
+                    title="Previous Slide"
+                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950/80 text-white backdrop-blur-md border border-slate-700 hover:bg-[#0d9488] hover:border-[#0d9488] transition-all shadow-md"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+
+                  <div className="flex items-center rounded-xl bg-slate-950/90 px-3 py-1.5 text-xs font-bold text-teal-200 backdrop-blur-md border border-slate-700 shadow-md">
+                    <span>
+                      {currentSlide + 1} / {slides.length}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    title="Next Slide"
+                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950/80 text-white backdrop-blur-md border border-slate-700 hover:bg-[#0d9488] hover:border-[#0d9488] transition-all shadow-md"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
               )}
-              <span>
-                {currentSlide + 1} / {slides.length}
-              </span>
+
+              {/* Diagonal Bottom Pagination Dots */}
+              {slides.length > 1 && (
+                <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2">
+                  {slides.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setCurrentSlide(idx)}
+                      aria-label={`Go to slide ${idx + 1}`}
+                      className={`transition-all duration-300 rounded-full h-2 ${currentSlide === idx
+                        ? "w-7 bg-[#0d9488] shadow-md shadow-[#0d9488]/80"
+                        : "w-2 bg-white/40 hover:bg-white"
+                        }`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-
-            {/* Next Button */}
-            <button
-              type="button"
-              onClick={handleNext}
-              title="Next Slide"
-              className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl sm:rounded-2xl bg-black/60 text-white backdrop-blur-md border border-white/30 hover:bg-[#C05800] hover:border-[#C05800] transition-all shadow-md"
-            >
-              <ChevronRight size={18} />
-            </button>
           </div>
-        )}
-
-        {/* Bottom Pagination Dots */}
-        {slides.length > 1 && (
-          <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-30 flex items-center gap-1.5 sm:gap-2">
-            {slides.map((_, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => setCurrentSlide(idx)}
-                aria-label={`Go to slide ${idx + 1}`}
-                className={`transition-all duration-300 rounded-full h-2 sm:h-2.5 ${
-                  currentSlide === idx
-                    ? "w-6 sm:w-8 bg-[#FBBF24] shadow-md shadow-[#FBBF24]/60"
-                    : "w-2 sm:w-2.5 bg-white/60 hover:bg-white"
-                }`}
-              />
-            ))}
-          </div>
-        )}
+        </div>
       </div>
     </section>
   );

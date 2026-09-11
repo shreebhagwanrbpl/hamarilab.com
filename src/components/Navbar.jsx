@@ -47,7 +47,7 @@ export default function Navbar() {
   ];
 
   return (
- <header className="sticky top-0 z-50 border-b border-[#E8D3BC] bg-white/90 backdrop-blur-xl shadow-sm">
+ <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-xl shadow-sm">
 
   <div className="container-custom flex h-20 items-center justify-between">
 
@@ -74,7 +74,7 @@ export default function Navbar() {
         <Link
           key={link.name}
           href={makeLink(link.path)}
-          className="relative font-medium text-[#5B4634] transition-all duration-300 hover:text-[#C05800] after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-[#C05800] after:transition-all after:duration-300 hover:after:w-full"
+          className="relative font-semibold text-slate-700 transition-all duration-300 hover:text-[#0d9488] after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-[#0d9488] after:transition-all after:duration-300 hover:after:w-full"
         >
           {link.name}
         </Link>
@@ -89,7 +89,7 @@ export default function Navbar() {
 
       <Link href={makeLink("/contact")}>
 
-        <button className="rounded-xl bg-[#C05800] px-6 py-3 font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#713600] hover:shadow-xl hover:shadow-[#C05800]/20">
+        <button className="rounded-xl bg-[#0d9488] px-6 py-3 font-bold text-white shadow-md shadow-[#0d9488]/20 transition-all duration-300 hover:bg-[#0f766e] hover:shadow-xl hover:shadow-[#0d9488]/30">
 
           Get Quote
 
@@ -103,18 +103,18 @@ export default function Navbar() {
 
     <button
       onClick={() => setMenuOpen(!menuOpen)}
-      className="rounded-xl border border-[#E8D3BC] bg-[#FDFBD4] p-2 transition-all duration-300 hover:bg-[#F3E4D2] lg:hidden"
+      className="rounded-xl border border-slate-200 bg-[#f0fdf9] p-2 transition-all duration-300 hover:bg-[#e6f8f3] lg:hidden"
     >
 
       {menuOpen ? (
         <X
           size={26}
-          className="text-[#C05800]"
+          className="text-[#0d9488]"
         />
       ) : (
         <Menu
           size={26}
-          className="text-[#C05800]"
+          className="text-[#0d9488]"
         />
       )}
 
@@ -130,7 +130,7 @@ export default function Navbar() {
     }`}
   >
 
-    <div className="border-t border-[#E8D3BC] bg-white px-6 py-6">
+    <div className="border-t border-slate-200 bg-white px-6 py-6">
 
       <nav className="flex flex-col gap-5">
 
@@ -140,7 +140,7 @@ export default function Navbar() {
             key={link.name}
             href={makeLink(link.path)}
             onClick={() => setMenuOpen(false)}
-            className="font-medium text-[#5B4634] transition-all duration-300 hover:translate-x-1 hover:text-[#C05800]"
+            className="font-semibold text-slate-700 transition-all duration-300 hover:translate-x-1 hover:text-[#0d9488]"
           >
 
             {link.name}
@@ -154,7 +154,7 @@ export default function Navbar() {
           onClick={() => setMenuOpen(false)}
         >
 
-          <button className="mt-2 w-full rounded-xl bg-[#C05800] py-3 font-semibold text-white transition-all duration-300 hover:bg-[#713600]">
+          <button className="mt-2 w-full rounded-xl bg-[#0d9488] py-3 font-bold text-white transition-all duration-300 hover:bg-[#0f766e]">
 
             Get Quote
 
